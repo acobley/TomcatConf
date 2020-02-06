@@ -1,0 +1,13 @@
+docker network create app-tier --driver bridge
+docker run -d --name zookeeper-server \
+    --network app-tier \
+    -e ALLOW_ANONYMOUS_LOGIN=yes \
+    bitnami/zookeeper:latest
+docker run -d --name kafka-server \
+    --network app-tier -p 9092:9092\
+    -e ALLOW_PLAINTEXT_LISTENER=yes \
+    -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper-server:2181 \
+    bitnami/kafka:latest
+
+docker run  --network app-tier -p 3306:3306 --name some-mysql -e MYSQL_ROOT_PASSWORD=dacjd156n. -d mysql:latest
+docker run -it -d -p 80:8080 --network app-tier --name tomcat -v "$PWD/conf/Catalina/localhost/manager.xml:/usr/local/tomcat/conf/Catalina/localhost/manager.xml:ro" -v "$PWD/conf/tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml:ro" --link kafka-server:kafka-server --link some-mysql:mysql tomcat:latest
